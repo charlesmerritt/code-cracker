@@ -1,26 +1,25 @@
 from selenium import webdriver
-from selenium.webdriver import Keys
-from selenium.webdriver.common.by import By
-import time
-# first version of code cracker that finds input box on website (made for cryptobin.co)
-# and repeatedly inputs from a dictionary txt file.
 
-# you can change .Firefox to other browsers but it may require modification.
 with webdriver.Firefox() as driver:
     driver.get("https://cryptobin.co/w177y163")
 
-# place dict file in path and reference it here
+    # Opens and saves the passwords to a list
     with open('list.txt') as f:
         lines = f.readlines()
+        # Removes the new line character in every password
+        lines = [line.removesuffix('\n') for line in lines]
 
-    password_field = driver.find_element(By.ID, "paste-password")
+    with open('main.js') as f:
+        script = ''.join(f.readlines())
+        # Adds a line to execute the function with a placeholder for the future password
+        script += 'return enterpass(arguments[0])'
 
     count = len(lines)
     for i, line in enumerate(lines):
-        print(f'Trying password #{i+1}: {line}'
+        print(f"Trying password #{i}: {line}\n"
               f'Progress: {round((i / count) * 100, 2)}%')
-        password_field.send_keys(line + Keys.RETURN)
 
-        if not driver.find_element(By.CLASS_NAME, 'alert-danger').is_displayed():
+        # Checks if the password decrypted the paste
+        if driver.execute_script(script, line):
             print(f"The password is {line}")
             break
